@@ -26,10 +26,18 @@ func main() {
 
 	if flag.NArg() > 0 {
 		for _, arg := range flag.Args() {
-			if a_path, err := filepath.Abs(arg); err == nil {
-				PathsToCheck = append(PathsToCheck, Path{Base: a_path})
+			if IsDir(arg) {
+				if a_path, err := filepath.Abs(arg); err == nil {
+					PathsToCheck = append(PathsToCheck, Path{Base: a_path})
+				} else {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			} else {
-				fmt.Fprintln(os.Stderr, err)
+				if pkg, err := build.Default.Import(arg, "", build.FindOnly); err == nil {
+					PathsToCheck = append(PathsToCheck, Path{Base: pkg.SrcRoot, Rel: pkg.ImportPath})
+				} else {
+					fmt.Fprintln(os.Stderr, err)
+				}
 			}
 		}
 	} else {
@@ -111,8 +119,16 @@ func PrintPackage(t *template.Template, pkg *build.Package) error {
 var defaultTemplate = template.Must(template.New("default").Parse(defaultOutput))
 var defaultOutput = `
 Package: {{.Name}}
+ImportPath: {{.ImportPath}}
 Dir: {{.Dir}}{{if .Imports}}
 Imports: {{range .Imports}}
  {{.}} {{end}}
 {{end}}
 `
+
+func IsDir(path string) bool {
+	if fi, err := os.Stat(path); err == nil && fi.IsDir() {
+		return true
+	}
+	return false
+}
