@@ -1,11 +1,12 @@
 /*
   go build imports.go
-  ./import -walk ./src/docker/ | less
+  ./import -r ./src/docker/ | less
 */
 package main
 
 import (
 	"flag"
+	"fmt"
 	"go/build"
 	"log"
 	"os"
@@ -20,15 +21,23 @@ var (
 )
 
 func main() {
-	flag.BoolVar(&ShouldWalk, "walk", ShouldWalk, "whether to walk the file system for packages")
+	flag.BoolVar(&ShouldWalk, "r", ShouldWalk, "whether to recurse/walk the file system for packages")
 	flag.Parse()
 
 	if flag.NArg() > 0 {
 		for _, arg := range flag.Args() {
-			PathsToCheck = append(PathsToCheck, Path{Base: arg})
+			if a_path, err := filepath.Abs(arg); err == nil {
+				PathsToCheck = append(PathsToCheck, Path{Base: a_path})
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+			}
 		}
 	} else {
-		PathsToCheck = append(PathsToCheck, Path{Base: DefaultPath})
+		if a_path, err := filepath.Abs(DefaultPath); err == nil {
+			PathsToCheck = append(PathsToCheck, Path{Base: a_path})
+		} else {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	}
 
 	if ShouldWalk {
