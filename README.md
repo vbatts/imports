@@ -26,3 +26,7 @@ See the imports recursively:
 
 	import -r .
 
+See the imports of library in GOROOT or GOPATH:
+
+	import net/http
+
