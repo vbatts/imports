@@ -16,13 +16,13 @@ Usage
 
 See the imports of the source in the current directory:
 
-  imports
-  
+	imports
+
 See the imports of a specific directory:
 
-  imports ~/go/src/pkg/net
+	imports ~/go/src/pkg/net
 
 See the imports recursively:
 
-  import -r .
+	import -r .
 
